@@ -1,0 +1,3 @@
+interface:
+  display_name: "Session Context"
+  short_description: "Project memory notebook for cross-session continuity"
