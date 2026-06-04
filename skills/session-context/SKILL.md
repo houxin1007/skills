@@ -1,48 +1,47 @@
 ﻿---
 name: session-context
-description: "跨会话项目记忆笔记本——在项目根目录维护 .codex/session-context.md，让每次新会话都能了解项目当前状态、进度方向和关键决策。适用于任何开发任务。"
+description: "Project memory notebook (.codex/session-context.md) for cross-session context continuity. Use for any project task — building features, fixing bugs, implementing changes, analyzing code, creating functionality, developing software, continuing previous work, or any development-related request. Also use when the user asks to recall, resume, remember, save, or checkpoint progress."
+metadata:
 ---
 
 # Session Context
 
-像学生的记忆笔记本一样，记录项目的关键信息，让每次会话都能续上。
+Like a student's memory notebook for a project — captures what matters so no session starts from zero.
 
-## 核心文件
+## The memory file
 
-项目根目录的 `.codex/session-context.md`。格式自由，只需要让下一次的 agent 能理解项目的当前状态。
+`.codex/session-context.md` in the project root. Format is entirely free; write whatever helps a future agent understand the project's current state. The file should naturally convey direction — where things are heading, not just where they've been.
 
-## 生命周期
+## Lifecycle
 
-### 会话开始
-读取 `.codex/session-context.md`。如果存在且有内容，简要告知用户项目当前状态：上次做了什么、学到了什么、待办是什么。如果文件不存在或为空，直接开始工作。
+### On session start
+Read the file. If it exists and has content, briefly tell the user what the project status is: what was being done, what was learned, what's pending. If the file is missing or empty, simply begin.
 
-### 会话进行中
-每当发生有意义的事情——决策、发现、步骤完成、方向变更——用一条测试判断是否需要更新文件：
+### During the session
+After anything meaningful happens — a decision, a discovery, a completed step, a change in direction — decide whether to update the file. Use one test:
 
-**"如果会话现在死掉，这些信息丢失了，下次会话会不会受影响？"**
+**"If the session dies right now and this is lost, would the next session be worse off?"**
 
-如果是，写入。不是，跳过。保持简洁，几行说清方向比长篇叙事更有用。
+If yes, write. If no, skip.
 
-### 会话结束时
-检查：是否有未完成的工作或未记录的知识需要下次会话知道？有就写最后一条，没有就保持原样。
+The update does not need to follow any template. Add a note. Revise an earlier note. Replace a stale section. Whatever makes the file more useful. Prefer brevity — a few lines that capture direction and key knowledge beat paragraphs of narration.
 
-## 记录什么
+### When the session is ending
+Check: is there unfinished work or unrecorded knowledge that a future session would need? If yes, write a final note. Otherwise leave the file as-is.
 
-- 正在构建什么、为什么
-- 当前在哪一步、下一步是什么
-- 做的决策及理由
-- 项目约定和发现的约束
-- 踩过的坑和解决方案
-- 用户偏好
+## What to capture
 
-## 不记录什么
+No checklist. Trust your judgment. Things that typically matter:
 
-- 琐碎的修复
-- 问候和闲聊
-- 可从标准文档轻易重建的信息
+- What we're building and why
+- What step we're on and what comes next
+- Decisions made and the reasoning behind them
+- Project conventions and constraints discovered along the way
+- Pitfalls, gotchas, and workarounds
+- User preferences that affect how work should be done
 
-## 执行步骤
+## What to skip
 
-1. **会话开始**: 读取文件，报告状态
-2. **有意义事件后**: 判断是否更新，写入精简笔记
-3. **会话结束**: 检查遗留，补齐最后一条
+- Trivial or one-off fixes
+- Greetings and small talk
+- Information easily reconstructed (e.g., standard library docs)
