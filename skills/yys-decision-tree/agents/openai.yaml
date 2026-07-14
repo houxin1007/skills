@@ -1,0 +1,5 @@
+﻿name: yys-decision-tree
+display_name: 斗技决策树 HTML
+short_description: 从斗技DB生成阵容决策树静态HTML可视化
+default_prompt: |-
+  使用yys-decision-tree skill，根据要求生成斗技阵容决策树HTML
