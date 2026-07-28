@@ -1,6 +1,11 @@
 ﻿{
-  "ownerId": "local",
+  "owner": "local",
   "slug": "session-context",
-  "version": "1.0.0",
-  "publishedAt": 1749000000000
+  "displayName": "Session Context",
+  "latest": {
+    "version": "1.0.0",
+    "publishedAt": 1749000000000,
+    "commit": ""
+  },
+  "history": []
 }
