@@ -1,0 +1,6 @@
+skills:
+  - name: ban-analysis
+    description: 斗技ban位推测
+    triggers:
+      - keyword: ban位
+      - keyword: 推测

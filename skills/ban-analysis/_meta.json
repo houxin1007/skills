@@ -1,0 +1,5 @@
+{
+  "name": "ban-analysis",
+  "description": "从阴阳师斗技数据库推断某阵容的ban位",
+  "version": "1.0.0"
+}
