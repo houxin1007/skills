@@ -106,10 +106,21 @@ def main():
         WHERE r.dt >= '{args.dt_start}' AND r.dt <= '{args.dt_end}'
     ''')[0]['t'])
 
-    hot_ids = [255, 311, 330, 341, 345, 357, 366, 372, 383, 385, 389, 393,
-               573, 575, 583, 584, 592, 596, 597, 600, 601, 602, 603, 604]
+    # ==== 动态热门式神: 取全局对方出场率最高的前24名 ====
+    hot_rows = q(f'''
+        SELECT s.id, s.name, s.aliases, COUNT(*) AS cnt
+        FROM ranking_battle_detail d
+        JOIN ranking r ON r.id = d.id
+        JOIN shi_shen_lu s ON s.id IN (d.d_battle_shi_shen_id1,d.d_battle_shi_shen_id2,
+             d.d_battle_shi_shen_id3,d.d_battle_shi_shen_id4,d.d_battle_shi_shen_id5)
+        WHERE r.dt >= '{args.dt_start}' AND r.dt <= '{args.dt_end or args.dt_start}'
+        GROUP BY s.id, s.name, s.aliases
+        ORDER BY cnt DESC
+        LIMIT 30
+    ''')
+    hot_ids = [int(r['id']) for r in hot_rows]
     hot_str = ','.join(str(x) for x in hot_ids)
-    si = {int(r['id']): r for r in q(f'SELECT id, name, aliases FROM shi_shen_lu WHERE id IN ({hot_str})')}
+    si = {int(r['id']): r for r in hot_rows}
 
     go = {}
     for r in q(f'''
