@@ -243,7 +243,7 @@ function tog(el) {
 python scripts/generate_decision_tree.py \
   --our 596,573,592 \
   --ban 597 \
-  --dt-start 2026-07-20 \
+  --dt-start 2026-07-20 \    # 不填即不限日期
   --dt-end 2026-07-26 \
   --min-matches 200 \
   --output "D:\GitStore\yys\.tmp\神龙平_决策树.html" \
@@ -256,8 +256,8 @@ python scripts/generate_decision_tree.py \
 |------|------|------|
 | `--our` | 是 | 我方前三手式神ID，逗号分隔 |
 | `--ban` | 否 | 禁用的式神ID，逗号分隔 |
-| `--dt-start` | 是 | 起始日期 |
-| `--dt-end` | 是 | 截止日期 |
+| `--dt-start` | 否 | 起始日期 (空=不限) |
+| `--dt-end` | 否 | 截止日期 (空=不限) |
 | `--min-matches` | 否 | 最低展示场次 (默认200) |
 | `--output` | 否 | 输出HTML路径 (默认 决策树.html) |
 | `--title` | 否 | 页面标题 |
