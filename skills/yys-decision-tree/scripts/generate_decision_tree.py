@@ -6,8 +6,8 @@
 参数说明:
   --our         我方前三手式神ID,逗号分隔 (必填)
   --ban         禁用的式神ID (可选,可多个逗号分隔)
-  --dt-start    数据起始日期 (必填)
-  --dt-end      数据截止日期 (必填)
+  --dt-start    数据起始日期 (可选, 空=不限)
+  --dt-end      数据截止日期 (可选, 空=不限)
   --min-matches 最低对局场次,低于此数不展示 (默认200)
   --output      输出HTML文件名 (默认 决策树.html)
   --title       页面标题 (可选)
@@ -201,8 +201,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="生成斗技阵容决策树HTML")
     parser.add_argument("--our", required=True, help="我方前三手式神ID,逗号分隔 如 596,573,592")
     parser.add_argument("--ban", default="", help="禁用的式神ID,逗号分隔")
-    parser.add_argument("--dt-start", required=True, help="数据起始日期 如 2026-07-20")
-    parser.add_argument("--dt-end", required=True, help="数据截止日期 如 2026-07-26")
+    parser.add_argument("--dt-start", default="", help="数据起始日期 如 2026-07-20, 空=不限")
+    parser.add_argument("--dt-end", default="", help="数据截止日期 如 2026-07-26, 空=不限")
     parser.add_argument("--min-matches", type=int, default=200, help="最低对局场次 (默认200)")
     parser.add_argument("--output", default="决策树.html", help="输出文件路径")
     parser.add_argument("--title", default="", help="页面标题")
@@ -237,7 +237,7 @@ if __name__ == "__main__":
                 f'rbd.d_battle_shi_shen_id1,rbd.d_battle_shi_shen_id2,rbd.d_battle_shi_shen_id3,'
                 f'rbd.d_battle_shi_shen_id4,rbd.d_battle_shi_shen_id5 '
                 f'FROM ranking_battle_detail rbd JOIN ranking r ON rbd.id=r.id '
-                f'WHERE r.dt>="{DT_START}" AND r.dt<="{DT_END}" AND rbd.battle_result IS NOT NULL;')
+                f'WHERE rbd.battle_result IS NOT NULL' + (f' AND r.dt>="{DT_START}"' if DT_START else '') + (f' AND r.dt<="{DT_END}"' if DT_END else '') + ';')
 
     battles = []
     for l in raw:
