@@ -34,6 +34,14 @@ python scripts/ban_analysis.py --our 596,573,592 --dt-start 2026-07-20 --dt-end 
 
 参见 `references/ban_analysis_cases.md`
 
+
+## 参考文件
+
+| 文件 | 说明 |
+|------|------|
+| `references/ban_analysis_cases.md` | 已验证的ban位案例（脚本输出） |
+| `references/known_ban_picks.md` | 人工维护ban位记录（玩家实战+博主视频观察） |
+
 ## 注意事项
 
 - Top20玩家ban倾向比Top50更集中
