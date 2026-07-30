@@ -76,10 +76,13 @@ def build_tree(battles, shen_alias, min_matches):
             el.sort(key=lambda x: -x["total"])
 
             for e4 in el:
+                e5d = Counter()
                 m5d = defaultdict(lambda:[0,0])
                 for b in e4["battles"]:
                     m5=b["m"][4]; m5d[m5][0]+=1
                     if b["r"]==1: m5d[m5][1]+=1
+                    e5=b["e"][4]
+                    if e5: e5d[e5]+=1
                 ml = []
                 for mid,(t,w) in m5d.items():
                     rw=wr(t,w)
@@ -89,6 +92,8 @@ def build_tree(battles, shen_alias, min_matches):
                 ml = ensure5(all_m, ml)
                 ml.sort(key=lambda x: -x["total"])
                 e4["my5"] = ml
+                el5 = sorted([{"key":k,"total":v} for k,v in e5d.items()], key=lambda x:-x["total"])[:10]
+                e4["ene5"] = el5
             m4["ene4"] = el
 
         cn = "/".join(shen_alias.get(s,str(s)) for s in combo)
@@ -137,6 +142,9 @@ def gen_html(tree, shen_alias, shen_rarity, title, out_path):
                     bw = min(round(m5["wr"]),100)
                     hl = " hl" if m5["wr"]>=mxw and m5["wr"]>0 else ""
                     body += f'<div class="p5row{hl}"><span class="p5n">{m5n}</span><span class="p5bar"><span style="width:{bw}%"></span></span><span class="p5wr">{m5w}</span><span class="p5ct">{m5["total"]}</span></div>'
+                if e4.get("ene5"):
+                    eparts = " / ".join(shen_alias.get(o["key"],str(o["key"]))+"("+str(o["total"])+")" for o in e4["ene5"])
+                    body += f'<div style="font-size:9px;color:#888;padding:0 0 0 8px">对方五选：{eparts}</div>'
             body += "</div>"
         cds += f'<div class="card" data-combo="{ck}"><div class="ch"><span class="on">{td["name"]}</span><span class="ot">{td["total"]}局</span></div><div class="p4l">{body}</div></div>'
 
