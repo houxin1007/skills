@@ -31,6 +31,16 @@ def show(t, bt, pct, wval, mn=20):
     if wval < 40: return False
     return t >= max(int(bt*pct/100), mn)
 
+def ensure5_low(all_o, filt):
+    if len(filt) >= 5: return filt
+    res = list(filt)
+    ks = {r["key"] for r in res}
+    for o in sorted([o for o in all_o if o["key"] not in ks], key=lambda x: -x["total"]):
+        if len(res) >= 5: break
+        res.append(o)
+    return res
+
+
 def ensure5(all_o, filt):
     if len(filt) >= 5: return filt
     res = list(filt)
@@ -65,15 +75,23 @@ def build_tree(battles, shen_alias, min_matches):
         for m4 in m4l:
             ea = defaultdict(list)
             for b in m4["battles"]: ea[b["e"][3]].append(b)
-            el = []
+            en = []  # normal (wr>=40)
+            el = []  # low (wr<40)
             for eid, ebl in ea.items():
                 w=sum(1 for b in ebl if b["r"]==1); t=len(ebl); rw=wr(t,w)
-                if show(t, m4["total"], 3, rw): el.append({"key":eid,"wins":w,"total":t,"wr":rw,"battles":ebl})
+                item = {"key":eid,"wins":w,"total":t,"wr":rw,"battles":ebl}
+                if show(t, m4["total"], 3, rw):
+                    en.append(item)
+                elif t >= 20:
+                    el.append(item)
             all_e = [{"key":eid,"wins":sum(1 for b in bl if b["r"]==1),"total":len(bl),
                       "wr":wr(len(bl),sum(1 for b in bl if b["r"]==1)),"battles":bl}
                      for eid,bl in sorted(ea.items(),key=lambda x:-len(x[1]))]
-            el = ensure5(all_e, el)
-            el.sort(key=lambda x: -x["total"])
+            en = ensure5(all_e, en)
+            el = ensure5_low(all_e, el)
+            for e in el: e["low"] = True
+            en.sort(key=lambda x: -x["total"]); el.sort(key=lambda x: -x["total"])
+            el = en + el
 
             for e4 in el:
                 e5d = Counter()
@@ -134,7 +152,7 @@ def gen_html(tree, shen_alias, shen_rarity, title, out_path):
             for e4 in m4["ene4"]:
                 en = shen_alias.get(e4["key"],str(e4["key"]))
                 ews = f"{e4['wr']:.1f}%".replace(".0%","%")
-                body += f'<div class="op4h">对方\u00b7{en} <span class="op4s">({e4["total"]}局, 我胜率{ews})</span></div>'
+                body += f'<div class="op4h{" low" if e4.get("low") else ""}">对方\u00b7{en} <span class="op4s">({e4["total"]}局, 我胜率{ews})</span></div>'
                 mxw = max((x["wr"] for x in e4["my5"]), default=0)
                 for m5 in e4["my5"]:
                     m5n = shen_alias.get(m5["key"],str(m5["key"]))
@@ -154,10 +172,10 @@ h1{{text-align:center;font-size:17px;color:#2c3e50;margin-bottom:2px}}.sub{{text
 .filter{{display:flex;flex-direction:column;gap:4px;margin-bottom:8px;padding:6px;background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.06)}}
 .fl-row{{display:flex;flex-wrap:wrap;gap:4px;align-items:center}}
 .chip{{padding:3px 8px;border-radius:4px;font-size:11px;cursor:pointer;border:1px solid #ddd;background:#fff;color:#555;transition:all .15s;white-space:nowrap}}
-.chip:hover{{border-color:#8e44ad;color:#8e44ad}}.chip.on{{background:#2c3e50;color:#fff;border-color:#2c3e50}}
+.chip:hover{{border-color:#8e44ad;color:#8e44ad}}.chip.on{{background:#2c3e50;color:#fff;border-color:#2c3e50;flex:none}}
 .chip .ct{{font-size:9px;color:#aaa;margin-left:3px}}.chip.on .ct{{color:#8ab4e8}}
 .gd{{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}}
-.card{{background:#fff;border-radius:8px;width:330px;box-shadow:0 2px 8px rgba(0,0,0,.05);transition:opacity .2s}}.card.hide{{display:none}}
+.card{{background:#fff;border-radius:8px;width:330px;box-shadow:0 2px 8px rgba(0,0,0,.05);transition:opacity .2s}}.card.hide{{display:none}}.low{{opacity:0.55}}.op4h.low::after{{content:" 劣势";font-size:9px;color:#e74c3c;margin-left:3px}}
 .ch{{background:#2c3e50;color:#fff;padding:7px 10px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center}}
 .on{{font-size:12px;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}}.ot{{font-size:10px;color:#bdc3c7}}
 .p4l{{padding:5px}}.p4row{{display:flex;align-items:center;padding:4px 5px;border-radius:4px;font-size:12px;cursor:pointer;gap:3px;margin-bottom:1px;background:#fff}}
