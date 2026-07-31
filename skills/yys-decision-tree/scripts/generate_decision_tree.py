@@ -82,14 +82,16 @@ def build_tree(battles, shen_alias, min_matches):
                 item = {"key":eid,"wins":w,"total":t,"wr":rw,"battles":ebl}
                 if show(t, m4["total"], 3, rw):
                     en.append(item)
-                elif t >= 20:
+                elif rw < 40 and t >= 20:
                     el.append(item)
             all_e = [{"key":eid,"wins":sum(1 for b in bl if b["r"]==1),"total":len(bl),
                       "wr":wr(len(bl),sum(1 for b in bl if b["r"]==1)),"battles":bl}
                      for eid,bl in sorted(ea.items(),key=lambda x:-len(x[1]))]
-            en = ensure5(all_e, en)
-            el = ensure5_low(all_e, el)
-            for e in el: e["low"] = True
+            en = ensure5([x for x in all_e if x["wr"] >= 40 and x["key"] not in {r["key"] for r in el}], en)
+            ek = {r["key"] for r in en} | {r["key"] for r in el}
+            el = ensure5_low([x for x in all_e if x["key"] not in ek], el)
+            for e in el:
+                if e["wr"] < 40: e["low"] = True
             en.sort(key=lambda x: -x["total"]); el.sort(key=lambda x: -x["total"])
             el = en + el
 
