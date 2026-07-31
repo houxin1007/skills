@@ -89,9 +89,13 @@ def build_tree(battles, shen_alias, min_matches):
                      for eid,bl in sorted(ea.items(),key=lambda x:-len(x[1]))]
             en = ensure5([x for x in all_e if x["wr"] >= 40 and x["key"] not in {r["key"] for r in el}], en)
             ek = {r["key"] for r in en} | {r["key"] for r in el}
+            el_keys0 = {r["key"] for r in el}
             el = ensure5_low([x for x in all_e if x["key"] not in ek], el)
             for e in el:
                 if e["wr"] < 40: e["low"] = True
+                if e["key"] not in el_keys0: e["fill"] = True
+            for e in en: e["grp"] = 0
+            for e in el: e["grp"] = 1
             en.sort(key=lambda x: -x["total"]); el.sort(key=lambda x: -x["total"])
             el = en + el
 
@@ -151,10 +155,16 @@ def gen_html(tree, shen_alias, shen_rarity, title, out_path):
             sn = shen_alias.get(m4["key"],str(m4["key"]))
             ws = f"{m4['wr']:.1f}%".replace(".0%","%")
             body += f'<div class="p4row" onclick="tog(this)"><span class="p4n">{sn}</span><span class="p4wr">{ws}</span><span class="p4ct">{m4["total"]}</span><span class="arr">▸</span></div><div class="p5d">'
+            last_grp = -1
             for e4 in m4["ene4"]:
+                grp = e4.get("grp", 0)
+                if grp != last_grp:
+                    if grp == 1:
+                        body += '<div class="op4sep">对方·劣势（我胜率&lt;40%，含补位）</div>'
+                    last_grp = grp
                 en = shen_alias.get(e4["key"],str(e4["key"]))
                 ews = f"{e4['wr']:.1f}%".replace(".0%","%")
-                body += f'<div class="op4h{" low" if e4.get("low") else ""}">对方\u00b7{en} <span class="op4s">({e4["total"]}局, 我胜率{ews})</span></div>'
+                body += f'<div class="op4h{" low" if e4.get("low") else ""}{" fill" if e4.get("fill") else ""}">对方\u00b7{en} <span class="op4s">({e4["total"]}局, 我胜率{ews})</span></div>'
                 mxw = max((x["wr"] for x in e4["my5"]), default=0)
                 for m5 in e4["my5"]:
                     m5n = shen_alias.get(m5["key"],str(m5["key"]))
@@ -186,7 +196,7 @@ h1{{text-align:center;font-size:17px;color:#2c3e50;margin-bottom:2px}}.sub{{text
 .p4wr{{color:#e67e22;font-weight:bold;font-size:11px;min-width:34px;text-align:right}}
 .p4ct{{color:#95a5a6;font-size:10px;min-width:30px;text-align:right}}.arr{{color:#bdc3c7;font-size:9px;transition:transform .2s}}
 .p5d{{display:none;padding:3px 0 3px 6px;border-left:2px solid #eee;margin:1px 0 3px 6px}}.p5d.open{{display:block}}
-.op4h{{font-size:11px;color:#8e44ad;font-weight:bold;margin-bottom:2px;margin-top:4px}}.op4s{{font-weight:normal;color:#95a5a6;font-size:10px}}
+.op4h{{font-size:11px;color:#8e44ad;font-weight:bold;margin-bottom:2px;margin-top:4px}}.op4s{{font-weight:normal;color:#95a5a6;font-size:10px}}.op4sep{{font-size:9px;color:#e74c3c;border-top:1px dashed #e74c3c;margin-top:5px;padding-top:3px;font-weight:bold}}.op4h.fill::after{{content:" 补";font-size:9px;color:#95a5a6;margin-left:3px}}
 .p5row{{display:flex;align-items:center;padding:2px 4px;border-radius:3px;font-size:11px;gap:2px;margin-bottom:1px;background:#faf8f6}}
 .p5row.hl{{font-weight:bold;background:#fff3cd}}.p5row:nth-child(even){{background:#f5f2ee}}
 .p5n{{flex:0 0 50px;color:#2c3e50;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px}}
