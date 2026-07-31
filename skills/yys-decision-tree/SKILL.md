@@ -112,26 +112,28 @@ WITH base AS (
 
 豁免条件为，无论我方第四手还是第五手，如果该式神的出现场次超过20场，并且胜率超过67%，则不受公式场次限制，可以展示出来。
 
-剔除条件为，无论我方第四手还是第五手，如果该式神的胜率低于40%，直接不展示，无关场次。
+剔除条件为，我方第四手、我方第五手胜率低于40%直接不展示，无关场次。
 
-最低保障为，无论我方四五手还是对方四手，经上述条件筛选后，若可选式神不足5种，则采取胜率>=40%场次最多的5种。
+对方第四手例外：对方四手胜率低于40%仍保留展示，标记"劣势"（半透明+劣势字样），最低场次20场。对方四手的劣势选项是关键信息（说明我方上这个式神时，对方反手这个式神我方容易输），必须展示。
+
+最低保障为，我方四五手经筛选后若不足5种，采取胜率>=40%场次最多的5种；对方四手分"正常（胜率≥40%）"与"劣势（胜率<40%）"两组，**各保5种**——正常组不足5种按胜率≥40%场次最多的补，劣势组不足5种按场次最多的补（不看胜率）。两组不通用，不是合计5种。
 
 #### 核心参数
 
 | 层级 | 公式 | 最低场次 | 豁免条件 | 剔除条件 |
 |---|---|---|---|---|
 | 我方第4手 | ≥ 全局对该组合总场次 × 1% | 20 | 胜率≥67% | 胜率<40% |
-| 对方第4手 | ≥ 我方第4手总场次 × 3% | 20 | 胜率≥67% | 胜率<40% |
+| 对方第4手 | ≥ 我方第4手总场次 × 3% | 20 | 胜率≥67% | 胜率<40% 保留并标记"劣势" |
 | 我方第5手 | ≥ 对方第4手总场次 × 5% | 20 | 胜率≥67% | 胜率<40% |
 
 #### 处理流程（伪代码）
 
 `
-function shouldShow(total, baseTotal, thresholdPct, winRate):
+function shouldShow(total, baseTotal, thresholdPct, winRate, isOpponent4th):
     minCount = max(floor(baseTotal × thresholdPct / 100), 20)
     if total < 20: return false              // 最低20场硬门槛
     if winRate >= 67: return true            // 胜率豁免（小样本高胜率也展示）
-    if winRate < 40: return false            // 低胜率直接剔除
+    if winRate < 40: return isOpponent4th    // 对方4手保留(标记劣势)，我方4/5手剔除
     return total >= minCount                 // 正常百分比判断
 `
 
@@ -148,9 +150,19 @@ function minimum5Options(allOptions, filteredOptions):
         if result.length >= 5: break
         if winRate >= 40%: result.push(option)  // 补入规则：仅需胜率≥40%
     return result
+
+// 对方4手劣势组专用：补入不限胜率，只看场次
+function minimum5OptionsLow(allOptions, filteredOptions):
+    if filteredOptions.length >= 5: return filteredOptions
+    result = copy(filteredOptions)
+    remaining = allOptions sorted by total desc, excluding already in filtered
+    for each option in remaining:
+        if result.length >= 5: break
+        result.push(option)  // 只看场次，不看胜率
+    return result
 `
 
-补入条件宽松（只需胜率≥40%），不设最低场次，确保每个展开项至少能看到5种对位选择。
+补入条件宽松（我方四五手只需胜率≥40%，对方4手劣势组只看场次），不设最低场次，确保每个展开项至少能看到5种对位选择。
 
 ### 点击展开/收起 (toggle) 实现要点
 
@@ -233,6 +245,12 @@ function tog(el) {
 - 若我方第四、五手出现前三手阵容的式神（如第四手再上龙珏），虽然极少见但无需理会
 - 对方侧同理：对方前三手用 `en[:3]` 排序后作为分组key，与对方四五手无关
 
+### 8. 筛选芯片选中变长：全局 .on 的 lex:1 冲突
+- ❌ 错误：.chip.on 只设置背景/边框色，未覆盖全局 .on{flex:1} → 点击选中后芯片被拉伸变长
+- ✅ 正确：.chip.on 加 lex:none
+- 原因：卡片标题行 .ch 内部用 .on{flex:1} 占满宽度，该全局类名与筛选芯片选中态 .chip.on 撞名，lex:1 泄漏到芯片上
+- 另外：.chip 本身需保持 white-space:nowrap，防止选中后文字换行撑高
+
 ## 脚本工具
 
 `scripts/generate_decision_tree.py` 是通用决策树生成脚本，封装了完整流程（SQL查询→数据处理→HTML生成）。
@@ -269,6 +287,7 @@ python scripts/generate_decision_tree.py \
 - 对方第四手 ≥ 我方第四手总场次 × 3%（最低20场）
 - 我方第五手 ≥ 对方第四手总场次 × 5%（最低20场）
 - 胜率 ≥ 67% 豁免场次限制（但最低20场硬门槛）
-- 胜率 < 40% 直接剔除
-- 不足5种补到5种
+- 我方4手/5手：胜率 < 40% 直接剔除
+- 对方4手：胜率 < 40% 保留，标记"劣势"（半透明+劣势标签），最低20场
+- 我方4手/5手：不足5种按胜率≥40%场次最多的补；对方4手：正常组与劣势组各保5种（劣势组补入只看场次）
 ﻿
